@@ -21,16 +21,18 @@
 @type empty: dns.name.Name object
 """
 
-import cStringIO
 import struct
 import sys
 import copy
+
+from six import BytesIO
 
 if sys.hexversion >= 0x02030000:
     import encodings.idna
 
 import dns.exception
 import dns.wiredata
+from dns.utils import long
 
 NAMERELN_NONE = 0
 NAMERELN_SUPERDOMAIN = 1
@@ -175,11 +177,11 @@ class Name(object):
         @rtype: int
         """
 
-        h = 0L
+        h = long(0)
         for label in self.labels:
             for c in label:
                 h += ( h << 3 ) + ord(c.lower())
-        return int(h % sys.maxint)
+        return int(h % sys.maxsize)
 
     def fullcompare(self, other):
         """Compare two names, returning a 3-tuple (relation, order, nlabels).
@@ -398,7 +400,7 @@ class Name(object):
         """
 
         if file is None:
-            file = cStringIO.StringIO()
+            file = BytesIO()
             want_return = True
         else:
             want_return = False

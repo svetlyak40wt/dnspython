@@ -25,14 +25,14 @@ default is 'dns.rdtypes'.  Changing this value will break the library.
 chunk of hexstring that _hexify() produces before whitespace occurs.
 @type _hex_chunk: int"""
 
-import cStringIO
-
 import dns.exception
 import dns.name
 import dns.rdataclass
 import dns.rdatatype
 import dns.tokenizer
 import dns.wiredata
+
+from six import BytesIO
 
 _hex_chunksize = 32
 
@@ -177,7 +177,7 @@ class Rdata(object):
     def to_digestable(self, origin = None):
         """Convert rdata to a format suitable for digesting in hashes.  This
         is also the DNSSEC canonical form."""
-        f = cStringIO.StringIO()
+        f = BytesIO()
         self.to_wire(f, None, origin)
         return f.getvalue()
 
@@ -264,9 +264,9 @@ class Rdata(object):
         # We specifiy an arbitrary origin of '.' when doing the
         # comparison, since the rdata may have relative names and we
         # can't convert a relative name to wire without an origin.
-        b1 = cStringIO.StringIO()
+        b1 = BytesIO()
         self.to_wire(b1, None, dns.name.root)
-        b2 = cStringIO.StringIO()
+        b2 = BytesIO()
         other.to_wire(b2, None, dns.name.root)
         return cmp(b1.getvalue(), b2.getvalue())
 

@@ -13,6 +13,8 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
 # OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+from __future__ import print_function
+
 import unittest
 
 import dns.dnssec
@@ -230,4 +232,4 @@ if __name__ == '__main__':
     if import_ok:
         unittest.main()
     else:
-        print 'skipping DNSSEC tests because pycrypto is not installed'
+        print('skipping DNSSEC tests because pycrypto is not installed')

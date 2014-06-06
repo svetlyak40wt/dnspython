@@ -15,10 +15,12 @@
 
 """DNS RRsets (an RRset is a named rdataset)"""
 
+import six
 import dns.name
 import dns.rdataset
 import dns.rdataclass
 import dns.renderer
+
 
 class RRset(dns.rdataset.Rdataset):
     """A DNS RRset (named rdataset).
@@ -122,11 +124,11 @@ def from_text_list(name, ttl, rdclass, rdtype, text_rdatas):
     @rtype: dns.rrset.RRset object
     """
 
-    if isinstance(name, (str, unicode)):
+    if isinstance(name, six.string_types):
         name = dns.name.from_text(name, None)
-    if isinstance(rdclass, (str, unicode)):
+    if isinstance(rdclass, six.string_types):
         rdclass = dns.rdataclass.from_text(rdclass)
-    if isinstance(rdtype, (str, unicode)):
+    if isinstance(rdtype, six.string_types):
         rdtype = dns.rdatatype.from_text(rdtype)
     r = RRset(name, rdclass, rdtype)
     r.update_ttl(ttl)
@@ -151,7 +153,7 @@ def from_rdata_list(name, ttl, rdatas):
     @rtype: dns.rrset.RRset object
     """
 
-    if isinstance(name, (str, unicode)):
+    if isinstance(name, six.string_types):
         name = dns.name.from_text(name, None)
 
     if len(rdatas) == 0:

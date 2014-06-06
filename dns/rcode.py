@@ -15,7 +15,13 @@
 
 """DNS Result Codes."""
 
+import sys
 import dns.exception
+
+
+if sys.version > '3':
+    long = int
+
 
 NOERROR = 0
 FORMERR = 1
@@ -49,7 +55,7 @@ _by_text = {
 # cannot make any mistakes (e.g. omissions, cut-and-paste errors) that
 # would cause the mapping not to be a true inverse.
 
-_by_value = dict([(y, x) for x, y in _by_text.iteritems()])
+_by_value = dict([(y, x) for x, y in _by_text.items()])
 
 
 class UnknownRcode(dns.exception.DNSException):

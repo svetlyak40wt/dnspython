@@ -15,13 +15,20 @@
 
 """Help for building DNS wire format messages"""
 
-import cStringIO
 import struct
 import random
 import time
+import sys
 
 import dns.exception
 import dns.tsig
+
+from six import BytesIO
+
+
+if sys.version > '3':
+    long = int
+
 
 QUESTION = 0
 ANSWER = 1
@@ -51,7 +58,7 @@ class Renderer(object):
         wire = r.get_wire()
 
     @ivar output: where rendering is written
-    @type output: cStringIO.StringIO object
+    @type output: BytesIO object
     @ivar id: the message id
     @type id: int
     @ivar flags: the message flags
@@ -86,7 +93,7 @@ class Renderer(object):
         @type origin: dns.name.Namem or None.
         """
 
-        self.output = cStringIO.StringIO()
+        self.output = BytesIO()
         if id is None:
             self.id = random.randint(0, 65535)
         else:
@@ -218,7 +225,7 @@ class Renderer(object):
         """
 
         # make sure the EDNS version in ednsflags agrees with edns
-        ednsflags &= 0xFF00FFFFL
+        ednsflags &= long(0xFF00FFFF)
         ednsflags |= (edns << 16)
         self._set_section(ADDITIONAL)
         before = self.output.tell()

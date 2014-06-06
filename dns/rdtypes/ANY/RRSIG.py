@@ -22,6 +22,8 @@ import dns.exception
 import dns.rdata
 import dns.rdatatype
 
+from base64 import b64decode
+
 class BadSigTime(dns.exception.DNSException):
     """Raised when a SIG or RRSIG RR's time cannot be parsed."""
     pass
@@ -116,7 +118,7 @@ class RRSIG(dns.rdata.Rdata):
                 raise dns.exception.SyntaxError
             chunks.append(t.value)
         b64 = ''.join(chunks)
-        signature = b64.decode('base64_codec')
+        signature = b64decode(b64)
         return cls(rdclass, rdtype, type_covered, algorithm, labels,
                    original_ttl, expiration, inception, key_tag, signer,
                    signature)

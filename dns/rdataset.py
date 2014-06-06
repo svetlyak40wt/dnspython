@@ -16,7 +16,6 @@
 """DNS rdatasets (an rdataset is a set of rdatas of a given type and class)"""
 
 import random
-import StringIO
 import struct
 
 import dns.exception
@@ -24,6 +23,9 @@ import dns.rdatatype
 import dns.rdataclass
 import dns.rdata
 import dns.set
+
+from six import StringIO
+
 
 # define SimpleSet here for backwards compatibility
 SimpleSet = dns.set.Set
@@ -192,7 +194,7 @@ class Rdataset(dns.set.Set):
         else:
             ntext = ''
             pad = ''
-        s = StringIO.StringIO()
+        s = StringIO()
         if not override_rdclass is None:
             rdclass = override_rdclass
         else:

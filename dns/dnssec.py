@@ -15,7 +15,6 @@
 
 """Common DNSSEC-related functions and constants."""
 
-import cStringIO
 import struct
 import time
 
@@ -27,6 +26,7 @@ import dns.rdataset
 import dns.rdata
 import dns.rdatatype
 import dns.rdataclass
+from six import BytesIO
 
 class UnsupportedAlgorithm(dns.exception.DNSException):
     """Raised if an algorithm is not supported."""
@@ -72,7 +72,7 @@ _algorithm_by_text = {
 # cannot make any mistakes (e.g. omissions, cut-and-paste errors) that
 # would cause the mapping not to be true inverse.
 
-_algorithm_by_value = dict([(y, x) for x, y in _algorithm_by_text.iteritems()])
+_algorithm_by_value = dict([(y, x) for x, y in _algorithm_by_text.items()])
 
 def algorithm_from_text(text):
     """Convert text into a DNSSEC algorithm value
@@ -93,7 +93,7 @@ def algorithm_to_text(value):
     return text
 
 def _to_rdata(record, origin):
-    s = cStringIO.StringIO()
+    s = BytesIO()
     record.to_wire(s, origin=origin)
     return s.getvalue()
 
@@ -118,7 +118,7 @@ def make_ds(name, key, algorithm, origin=None):
         dsalg = 2
         hash = dns.hash.get('SHA256')()
     else:
-        raise UnsupportedAlgorithm, 'unsupported algorithm "%s"' % algorithm
+        raise UnsupportedAlgorithm('unsupported algorithm "%s"' % algorithm)
 
     if isinstance(name, (str, unicode)):
         name = dns.name.from_text(name, origin)
@@ -187,7 +187,7 @@ def _make_hash(algorithm):
         return dns.hash.get('SHA384')()
     if _is_sha512(algorithm):
         return dns.hash.get('SHA512')()
-    raise ValidationFailure, 'unknown hash for algorithm %u' % algorithm
+    raise ValidationFailure('unknown hash for algorithm %u' % algorithm)
 
 def _make_algorithm_id(algorithm):
     if _is_md5(algorithm):
@@ -199,7 +199,7 @@ def _make_algorithm_id(algorithm):
     elif _is_sha512(algorithm):
         oid = [0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x03]
     else:
-        raise ValidationFailure, 'unknown algorithm %u' % algorithm
+        raise ValidationFailure('unknown algorithm %u' % algorithm)
     olen = len(oid)
     dlen = _make_hash(algorithm).digest_size
     idbytes = [0x30] + [8 + olen + dlen] + \
@@ -232,7 +232,7 @@ def _validate_rrsig(rrset, rrsig, keys, origin=None, now=None):
 
     for candidate_key in _find_candidate_keys(keys, rrsig):
         if not candidate_key:
-            raise ValidationFailure, 'unknown key'
+            raise ValidationFailure('unknown key')
 
         # For convenience, allow the rrset to be specified as a (name, rdataset)
         # tuple as well as a proper rrset
@@ -246,9 +246,9 @@ def _validate_rrsig(rrset, rrsig, keys, origin=None, now=None):
         if now is None:
             now = time.time()
         if rrsig.expiration < now:
-            raise ValidationFailure, 'expired'
+            raise ValidationFailure('expired')
         if rrsig.inception > now:
-            raise ValidationFailure, 'not yet valid'
+            raise ValidationFailure('not yet valid')
 
         hash = _make_hash(rrsig.algorithm)
 
@@ -297,7 +297,7 @@ def _validate_rrsig(rrset, rrsig, keys, origin=None, now=None):
                 digest_len = 48
             else:
                 # shouldn't happen
-                raise ValidationFailure, 'unknown ECDSA curve'
+                raise ValidationFailure('unknown ECDSA curve')
             keyptr = candidate_key.key
             x = Crypto.Util.number.bytes_to_long(keyptr[0:key_len])
             y = Crypto.Util.number.bytes_to_long(keyptr[key_len:key_len * 2])
@@ -311,7 +311,7 @@ def _validate_rrsig(rrset, rrsig, keys, origin=None, now=None):
             sig = ecdsa.ecdsa.Signature(Crypto.Util.number.bytes_to_long(r),
                                         Crypto.Util.number.bytes_to_long(s))
         else:
-            raise ValidationFailure, 'unknown algorithm %u' % rrsig.algorithm
+            raise ValidationFailure('unknown algorithm %u' % rrsig.algorithm)
 
         hash.update(_to_rdata(rrsig, origin)[:18])
         hash.update(rrsig.signer.to_digestable(origin))
@@ -344,11 +344,11 @@ def _validate_rrsig(rrset, rrsig, keys, origin=None, now=None):
             # Raise here for code clarity; this won't actually ever happen
             # since if the algorithm is really unknown we'd already have
             # raised an exception above
-            raise ValidationFailure, 'unknown algorithm %u' % rrsig.algorithm
+            raise ValidationFailure('unknown algorithm %u' % rrsig.algorithm)
 
         if pubkey.verify(digest, sig):
             return
-    raise ValidationFailure, 'verify failure'
+    raise ValidationFailure('verify failure')
 
 def _validate(rrset, rrsigset, keys, origin=None, now=None):
     """Validate an RRset
@@ -386,18 +386,18 @@ def _validate(rrset, rrsigset, keys, origin=None, now=None):
     rrname = rrname.choose_relativity(origin)
     rrsigname = rrname.choose_relativity(origin)
     if rrname != rrsigname:
-        raise ValidationFailure, "owner names do not match"
+        raise ValidationFailure("owner names do not match")
 
     for rrsig in rrsigrdataset:
         try:
             _validate_rrsig(rrset, rrsig, keys, origin, now)
             return
-        except ValidationFailure, e:
+        except ValidationFailure:
             pass
-    raise ValidationFailure, "no RRSIGs validated"
+    raise ValidationFailure("no RRSIGs validated")
 
 def _need_pycrypto(*args, **kwargs):
-    raise NotImplementedError, "DNSSEC validation requires pycrypto"
+    raise NotImplementedError("DNSSEC validation requires pycrypto")
 
 try:
     import Crypto.PublicKey.RSA

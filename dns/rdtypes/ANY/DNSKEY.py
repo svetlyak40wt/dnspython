@@ -19,6 +19,9 @@ import struct
 import dns.exception
 import dns.dnssec
 import dns.rdata
+from dns.utils import cmp
+
+from base64 import b64decode
 
 # flag constants
 SEP = 0x0001
@@ -62,8 +65,9 @@ class DNSKEY(dns.rdata.Rdata):
             if not t.is_identifier():
                 raise dns.exception.SyntaxError
             chunks.append(t.value)
+            
         b64 = ''.join(chunks)
-        key = b64.decode('base64_codec')
+        key = b64decode(b64)
         return cls(rdclass, rdtype, flags, protocol, algorithm, key)
 
     from_text = classmethod(from_text)

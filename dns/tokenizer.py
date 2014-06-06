@@ -15,12 +15,17 @@
 
 """Tokenize DNS master file format"""
 
-import cStringIO
 import sys
 
 import dns.exception
 import dns.name
 import dns.ttl
+
+from six import StringIO
+
+if sys.version > '3':
+    long = int
+    
 
 _DELIMITERS = {
     ' ' : True,
@@ -198,7 +203,7 @@ class Tokenizer(object):
         """
 
         if isinstance(f, str):
-            f = cStringIO.StringIO(f)
+            f = StringIO(f)
             if filename is None:
                 filename = '<string>'
         else:
@@ -488,7 +493,7 @@ class Tokenizer(object):
         if not token.value.isdigit():
             raise dns.exception.SyntaxError('expecting an integer')
         value = long(token.value)
-        if value < 0 or value > 4294967296L:
+        if value < 0 or value > long(4294967296):
             raise dns.exception.SyntaxError('%d is not an unsigned 32-bit integer' % value)
         return value
 
